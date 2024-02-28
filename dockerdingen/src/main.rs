@@ -1,18 +1,29 @@
 use mongodb::{
-    bson::{doc, Document, to_document},
+    bson::{doc, Document},
     options::ClientOptions,
     Collection,
     Client,
 };
-use serde::{Deserialize, Serialize};
+mod database_operations;
 
+use database_operations::{create, read, update, delete};
+use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::io;
+
+enum Commando {
+    Stop,
+    Toevoegen,
+    Update,
+    Ophalen,
+    Verwijderen,
+}
 
 // Define Gebruikers struct
 #[derive(Debug, Serialize, Deserialize)]
 struct Gebruikers {
     naam: String,
+    leeftijd: i32,
 }
 
 #[tokio::main]
@@ -24,44 +35,38 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let my_coll: Collection<Document> = client.database("app").collection("gebruikers");
 
     println!("Connected to MongoDB!");
-    let mut input = String::new();
 
- let result = my_coll.find_one(
-        doc! { "naam": "steven" },
-        None
-    ).await?;
-    println!("{:#?}", result);
+    loop {
+        println!("Voer een commando in ('toevoegen', 'update', 'ophalen', 'verwijderen', 'stop'): ");
 
-    io::stdin()
-        .read_line(&mut input)
-        .expect("Failed to read line");
+        let mut input = String::new();
 
-    // Create a Gebruikers instance
-    let doc = Gebruikers {
-        naam: input.trim().to_string(),
-    };
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
+        // Verander de input naar lowercase.
+        // en match de input met een commando.
+        // commando wordt in een variabele gezet
+        // als het niet overeenkomt wordt er een foutmelding gegeven
+        let commando = match input.trim().to_lowercase().as_str() {
+            "update" => Commando::Update,
+            "toevoegen" => Commando::Toevoegen,
+            "ophalen" => Commando::Ophalen,
+            "verwijderen" => Commando::Verwijderen,
+            "stop" => Commando::Stop,
+            _ => {
+                println!("Ongeldig commando, probeer opnieuw.");
+                continue;
+            }
+        };
+        match commando {
+            Commando::Toevoegen => create(&my_coll).await?,
+            Commando::Ophalen => read(&my_coll).await?,
+            Commando::Update => update(&my_coll).await?,
+            Commando::Verwijderen => delete(&my_coll).await?,
+            Commando::Stop => break,
+        }
+    }
 
-    // Print the document (for debugging purposes)
-    println!("{:?}", doc);
-
-    // Convert Gebruikers struct to BSON document
-    let bson_doc = to_document(&doc)?;
-
-    // Insert the document into the collection
-
-    // match my_coll.insert_one(bson_doc, None).await {
-    //     Ok(_) => println!("Document inserted successfully!"),
-    //     Err(e) => eprintln!("Failed to insert document: {}", e),
-    // }
-
-    let filter = doc! { "naam": "tim" };
-    // let update = doc! { "$set": doc! {"leeftijd": "22"} };
-
-    // let res = my_coll.update_one(filter, update, None).await?;
-    // println!("Updated documents: {}", res.modified_count);
-
-    let result = my_coll.delete_one(filter, None).await?;
-    println!("Deleted documents: {}", result.deleted_count);
     Ok(())
 }
- 
