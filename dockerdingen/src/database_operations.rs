@@ -1,12 +1,6 @@
 use mongodb::{bson::{doc, Document}, Collection};
 use std::{error::Error, io};
 
-struct Gebruikers {
-    naam: String,
-    leeftijd: i32,
-}
-
-
 pub async fn create(coll: &Collection<Document>) -> Result<(), Box<dyn Error>> {
     println!("Wat is de naam van wie je wilt toevoegen?");
     let mut naam = String::new();
@@ -20,8 +14,9 @@ pub async fn create(coll: &Collection<Document>) -> Result<(), Box<dyn Error>> {
         .read_line(&mut leeftijd)
         .expect("Failed to read line");
 
-    // Convert leeftijd to an integer
-    let leeftijd: i32 = leeftijd.trim().parse().expect("Please enter a valid integer for leeftijd");
+    // verandert leeftijd naar een int inplaats van een string
+    let leeftijd: i32 = leeftijd.trim().parse()
+    .expect("Please enter a valid integer for leeftijd");
 
     let document = doc! {"naam": naam.trim(), "leeftijd": leeftijd};
 
@@ -32,7 +27,7 @@ pub async fn create(coll: &Collection<Document>) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-pub async fn read(coll: &Collection<Document>) -> Result<(), Box<dyn Error>> {
+pub async fn read(_coll: &Collection<Document>) -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
@@ -49,8 +44,9 @@ pub async fn update(coll: &Collection<Document>) -> Result<(), Box<dyn Error>> {
         .read_line(&mut nieuwe_leeftijd)
         .expect("Failed to read line");
 
-    // Convert nieuwe_leeftijd to an integer
-    let nieuwe_leeftijd: i32 = nieuwe_leeftijd.trim().parse().expect("Please enter a valid integer for leeftijd");
+    // verander leeftijd naar een int inplaats van een string
+    let nieuwe_leeftijd: i32 = nieuwe_leeftijd.trim().parse()
+    .expect("Please enter a valid integer for leeftijd");
 
     let filter = doc! {"naam": naam.trim()};
     let update_doc = doc! {"$set": {"leeftijd": nieuwe_leeftijd}};

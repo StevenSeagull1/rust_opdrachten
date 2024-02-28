@@ -1,5 +1,5 @@
 use mongodb::{
-    bson::{doc, Document},
+    bson::{Document},
     options::ClientOptions,
     Collection,
     Client,
@@ -7,7 +7,6 @@ use mongodb::{
 mod database_operations;
 
 use database_operations::{create, read, update, delete};
-use serde::{Deserialize, Serialize};
 use std::error::Error;
 use std::io;
 
@@ -19,16 +18,9 @@ enum Commando {
     Verwijderen,
 }
 
-// Define Gebruikers struct
-#[derive(Debug, Serialize, Deserialize)]
-struct Gebruikers {
-    naam: String,
-    leeftijd: i32,
-}
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    // Connect to the MongoDB server
+    // verbinding met mongo
     let client_options = ClientOptions::parse("mongodb://localhost:27017").await?;
     let client = Client::with_options(client_options)?;
 
