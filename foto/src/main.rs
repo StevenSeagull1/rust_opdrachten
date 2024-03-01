@@ -7,7 +7,7 @@ fn main() {
     let grayscale_img = convert_to_grayscale(&img);
 
     // hier wordt de zwart wit foto opgeslagen
-    grayscale_img.save("output_image.jpg").expect("Failed to save grayscale image");
+    grayscale_img.save("zwart-wit.jpg").expect("Failed to save grayscale image");
 }
 
 fn convert_to_grayscale(img: &DynamicImage) -> DynamicImage {
