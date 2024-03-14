@@ -1,0 +1,15 @@
+[package]
+name = "my_pico_project"
+version = "0.1.0"
+edition = "2018"
+
+
+[dependencies]
+pico-sdk = "0.2"
+cortex-m = "0.6.1"
+
+[profile.dev]
+panic = "abort"
+
+[profile.release]
+panic = "abort"
