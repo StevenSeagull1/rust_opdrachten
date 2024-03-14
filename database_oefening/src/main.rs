@@ -10,7 +10,7 @@ struct Accounts {
 #[tokio::main]
 async fn main() -> Result<(), mongodb::error::Error> {
     // verbindings link
-    let client_options = ClientOptions::parse("mongodb+srv://steven:1010@mongo.vpekq8s.mongodb.net/").await?;
+    let client_options = ClientOptions::parse("/").await?;
     // de connectie met de server
     
     let client = Client::with_options(client_options)?;
