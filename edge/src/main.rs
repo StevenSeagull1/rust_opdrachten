@@ -2,16 +2,16 @@ use image::{RgbImage, Rgb};
 
 fn main() {
     // afbeelding openen
-    let img = image::open("images/rust.png").unwrap().to_rgb8();
+    let img = image::open("images/unknown.png").unwrap().to_rgb8();
 
     // afbeelding grijs maken
     let gray_img = rgb_to_gray(&img);
 
     // de afbeelding randen geven
-    // let edges = sobel_edge_detection(&gray_img);
+    let edges = sobel_edge_detection(&gray_img);
 
     // afbeelding opslaan
-    gray_img.save("unknown.png").unwrap();
+    edges.save("unknown.png").unwrap();
 }
 
 // de fucntie om alles te veranderen in grijs

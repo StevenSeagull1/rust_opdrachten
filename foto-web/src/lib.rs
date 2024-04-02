@@ -2,8 +2,6 @@ use wasm_bindgen::prelude::wasm_bindgen;
 
 mod utils;
 
-use image::{RgbImage, Rgb};
-
 // Functie om een afbeelding in grijswaarden om te zetten
 #[wasm_bindgen]
 pub fn rgb_to_gray(image_data: Vec<u8>, width: u32, height: u32) -> Vec<u8> {
