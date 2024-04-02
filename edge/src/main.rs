@@ -8,10 +8,10 @@ fn main() {
     let gray_img = rgb_to_gray(&img);
 
     // de afbeelding randen geven
-    let edges = sobel_edge_detection(&gray_img);
+    // let edges = sobel_edge_detection(&gray_img);
 
     // afbeelding opslaan
-    edges.save("output_image.jpg").unwrap();
+    gray_img.save("unknown.png").unwrap();
 }
 
 // de fucntie om alles te veranderen in grijs
