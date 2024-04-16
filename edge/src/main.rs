@@ -2,7 +2,7 @@ use image::{RgbImage, Rgb};
 
 fn main() {
     // afbeelding openen
-    let img = image::open("images/unknown.png").unwrap().to_rgb8();
+    let img = image::open("images/ron.png").unwrap().to_rgb8();
 
     // afbeelding grijs maken
     let gray_img = rgb_to_gray(&img);
