@@ -22,45 +22,116 @@ pub fn rgb_to_gray(image_data: Vec<u8>, width: u32, height: u32) -> Vec<u8> {
             gray_image_data[pixel_index + 3] = image_data[pixel_index + 3];
         }
     }
-
     gray_image_data
 }
 
 
-// // Functie voor het detecteren van randen met Sobel-operator
+// Functie voor het detecteren van randen met Sobel-operator
 #[wasm_bindgen]
-pub fn sobel_edge_detection(image_data: Vec<u8>, width: u32, height: u32) -> Vec<u8> {
-    let mut edge_image_data = vec![0; (width * height * 4) as usize];
+pub fn marker(image_data: Vec<u8>, width: u32, height: u32) -> Vec<u8> {
+    let mut output_image_data = image_data.clone();
 
-    let sobel_x: [[i32; 3]; 3] = [[-1, 0, 1],
-                                    [-2, 0, 2],
-                                    [-1, 0, 1]];
+    let square_width = width / 6;
+    let square_height = height / 6;
+    let sub_square_width = square_width / 5;
+    let sub_square_height = square_height / 5;
 
-    let sobel_y: [[i32; 3]; 3] = [[-1, -2, -1],
-                                    [ 0,  0,  0],
-                                    [ 1,  2,  1]];
+    for i in 0..6 {
+        for j in 0..6 {
+            let x_start = i * square_width;
+            let y_start = j * square_height;
 
-    for y in 1..height-1 {
-        for x in 1..width-1 {
-            let mut pixel_x: i32 = 0;
-            let mut pixel_y: i32 = 0;
-            for j in 0..3 {
-                for i in 0..3 {
-                    let pixel_index = (((y + j - 1) * width + (x + i - 1)) * 4) as usize;
-                    let gray_value = image_data[pixel_index] as i32;
-                    pixel_x += gray_value * sobel_x[j as usize][i as usize];
-                    pixel_y += gray_value * sobel_y[j as usize][i as usize];
+            let mut blue_pixel_count: u32 = 0;
+            let mut total_blue: u32 = 0;
+            for x in x_start..(x_start + square_width) {
+                for y in y_start..(y_start + square_height) {
+                    if x < width && y < height {
+                        let pixel_index = (((y * width + x) * 4) as usize);
+                        let blue = output_image_data[pixel_index + 2] as u32;
+                        let green = output_image_data[pixel_index + 1] as u32;
+                        let red = output_image_data[pixel_index] as u32;
+                        if blue > red && blue > green {
+                            blue_pixel_count += 1;
+                            total_blue += blue;
+                        }
+                    }
                 }
             }
+            let average_blue = total_blue / (square_width * square_height);
 
-            let magnitude = ((pixel_x.pow(2) + pixel_y.pow(2)) as f64).sqrt() as u8;
-            let index = ((y * width + x) * 4) as usize; 
-            edge_image_data[index] = magnitude;
-            edge_image_data[index + 1] = magnitude;
-            edge_image_data[index + 2] = magnitude;
-            edge_image_data[index + 3] = 255; 
+            let total_pixels = square_width * square_height;
+            let blue_ratio = blue_pixel_count as f32 / total_pixels as f32;
+            if blue_ratio > 0.98 {
+                for x in x_start..(x_start + square_width) {
+                    for y in y_start..(y_start + square_height) {
+                        if x < width && y < height {
+                            let pixel_index = (((y * width + x) * 4) as usize);
+                            output_image_data[pixel_index] = 255;
+                            output_image_data[pixel_index + 1] = 255;
+                            output_image_data[pixel_index + 2] = 255;
+                            output_image_data[pixel_index + 3] = 255;
+                        }
+                    }
+                }
+            } else {
+                for sub_i in 0..5 {
+                    for sub_j in 0..5 {
+                        let sub_x_start = x_start + sub_i * sub_square_width;
+                        let sub_y_start = y_start + sub_j * sub_square_height;
+
+                        let mut sub_blue_pixel_count = 0;
+
+                        for x in sub_x_start..(sub_x_start + sub_square_width) {
+                            for y in sub_y_start..(sub_y_start + sub_square_height) {
+                                if x < width && y < height {
+                                    let pixel_index = (((y * width + x) * 4) as usize);
+                                    let blue = output_image_data[pixel_index + 2] as u32;
+                                    let green = output_image_data[pixel_index + 1] as u32;
+                                    let red = output_image_data[pixel_index] as u32;
+                                    if blue > red && blue > green {
+                                        sub_blue_pixel_count += 1;
+                                    }
+                                }
+                            }
+                        }
+
+                        let sub_total_pixels = sub_square_width * sub_square_height;
+                        let sub_blue_ratio = sub_blue_pixel_count as f32 / sub_total_pixels as f32;
+                        if sub_blue_ratio > 0.99 {
+                            // Als het subvierkant meer dan 98% blauw is, maak het volledig wit
+                            for x in sub_x_start..(sub_x_start + sub_square_width) {
+                                for y in sub_y_start..(sub_y_start + sub_square_height) {
+                                    if x < width && y < height {
+                                        let pixel_index = (((y * width + x) * 4) as usize);
+                                        output_image_data[pixel_index] = 255;
+                                        output_image_data[pixel_index + 1] = 255;
+                                        output_image_data[pixel_index + 2] = 255;
+                                        output_image_data[pixel_index + 3] = 255;
+                                    }
+                                }
+                            }
+                        } else if sub_blue_ratio > 0.04 {
+                            for x in sub_x_start..(sub_x_start + sub_square_width) {
+                                for y in sub_y_start..(sub_y_start + sub_square_height) {
+                                    if x < width && y < height {
+                                        let pixel_index = (((y * width + x) * 4) as usize);
+                                        let blue = output_image_data[pixel_index + 2] as u32;
+                                        let green = output_image_data[pixel_index + 1] as u32;
+                                        let red = output_image_data[pixel_index] as u32;
+                                        if blue > red && blue > green {
+                                            output_image_data[pixel_index] = 255;
+                                            output_image_data[pixel_index + 1] = 255;
+                                            output_image_data[pixel_index + 2] = 255;
+                                            output_image_data[pixel_index + 3] = 255;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
-
-    edge_image_data
+    output_image_data
 }
